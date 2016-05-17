@@ -23,6 +23,7 @@ nebula_osquery:
 '''
 from __future__ import absolute_import
 
+import copy
 import salt.utils
 
 import logging
@@ -63,6 +64,12 @@ def queries(query_group, verbose=False, pillar_key='nebula_osquery'):
         query_sql = query.get('query')
         if not query_sql:
             continue
-        ret.append({name: __salt__['osquery.query'](query_sql)})
+        query_ret = __salt__['osquery.query'](query_sql)
+        if verbose:
+            tmp = copy.deepcopy(query)
+            tmp['query_result'] = query_ret
+            ret.append(tmp)
+        else:
+            ret.append({name: query_ret})
 
     return ret
