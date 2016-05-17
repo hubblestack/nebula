@@ -2,6 +2,11 @@
 '''
 osquery wrapper for HubbleStack Nebula
 
+:maintainer: basepi
+:maturity: 20160517
+:platform: All
+:requires: SaltStack, osquery
+
 Designed to run sets of osquery queries defined in pillar. These sets will have
 a unique identifier, and be targeted by identifier. Usually, this identifier
 will be a frequency. ('15 minutes', '1 day', etc). Identifiers are
@@ -44,6 +49,17 @@ def queries(query_group, verbose=False, pillar_key='nebula_osquery'):
     '''
     Run the set of queries represented by ``query_group`` from the
     configuration in the pillar key ``nebular_osquery``.
+
+    query_group
+        Group of queries to run
+
+    verbose
+        Defaults to False. If set to True, more information (such as the query
+        which was run) will be included in the result.
+
+    pillar_key
+        Defaults to 'nebula_osquery'. This is the key in pillar which will be
+        inspected for Nebula osquery data.
 
     CLI Examples:
 
