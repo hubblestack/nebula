@@ -49,6 +49,32 @@ You can set up the queries to run on a schedule using salt's scheduler, and
 return the results to Splunk or another destination. Or you can run the queries
 manually on demand.
 
+Schedule Data
+-------------
+
+Nebula is designed to be used on a schedule. Here is a set of sample schedules
+for use with the sample pillar data contained in this repo:
+
+.. code_block:: yaml
+
+    schedule:
+      nebula_fifteen_min:
+        function: nebula.queries
+        seconds: 900
+        args:
+          - fifteen_min
+      nebula_hour:
+        function: nebula.queries
+        seconds: 3600
+        args:
+          - hour
+      nebula_day:
+        function: nebula.queries
+        seconds: 86400
+        args:
+          - day
+
+
 Roadmap
 -------
 
