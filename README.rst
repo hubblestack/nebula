@@ -55,7 +55,7 @@ Schedule Data
 Nebula is designed to be used on a schedule. Here is a set of sample schedules
 for use with the sample pillar data contained in this repo:
 
-.. code_block:: yaml
+.. code-block:: yaml
 
     schedule:
       nebula_fifteen_min:
