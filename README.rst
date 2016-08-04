@@ -39,7 +39,7 @@ Your pillar data might look like this:
 
 You can then target these queries like so:
 
-.. code_block:: bash
+.. code-block:: bash
 
     salt '*' nebula.queries day
     salt '*' nebula.queries hour verbose=True
