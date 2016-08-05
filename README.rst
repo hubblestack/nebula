@@ -1,59 +1,115 @@
-Nebula
-======
+Introduction
+============
 
-Nebula is Hubble's Insight system, which ties into osquery, allowing you to
-query your infrastructure as if it were a database. Currently only supported on
-Linux.
+Nebula is Hubble's Insight system, which ties into ``osquery``, allowing you to
+query your infrastructure as if it were a database. This system can be used to
+take scheduled snapshots of your systems.
+
+Two different installation methods are outlined below. The first method is more
+stable (and therefore recommended). This method uses Salt's package manager to
+track versioned, packaged updates to Hubble's components.
+
+The second method installs directly from git. It should be considered bleeding
+edge and possibly unstable.
+
+Currently only supported on Linux.
 
 Installation
-------------
+============
 
-Currently Nebula consists of only a single module, ``nebula_osquery.py``. Place
-this module in your ``_modules/`` directory and use ``saltutil.sync_all`` to
-sync it to your minions. The module's ``__virtualname__`` is ``nebula``, so
-that is the name you'll use when calling the module. (See the examples below)
+**Required Configuration**
 
-The module relies on Salt's ``osquery`` module, which in turn relies on the
-``osquery`` package. Installation instructions for ``osquery`` can be found
-`here <https://osquery.io/downloads/>`_.
+Salt's Package Manager (SPM) installs files into `/srv/spm/{salt,pillar}`.
+Ensure that this path is defined in your Salt Master's `file_roots`:
+
+.. code-block:: yaml
+
+    file_roots:
+      - /srv/salt
+      - /srv/spm/salt
+
+.. note:: This should be the default value. To verify run: `salt-call config.get file_roots`
+
+.. tip:: Remember to restart the Salt Master after making this change to the configuration.
+
+Installation (Packages)
+-----------------------
+
+Installation is as easy as downloading and installing a package. (Note: in
+future releases you'll be able to subscribe directly to our HubbleStack SPM
+repo for updates and bugfixes!)
+
+.. code-block:: shell
+
+    wget https://spm.hubblestack.io/2016.7.0_RC1/hubblestack_nebula-2016.7.0_RC1-1.spm
+    spm local install hubblestack_nebula-2016.7.0_RC1-1.spm
+
+You should now be able to sync the new modules to your minion(s) using the
+`sync_modules` Salt utility:
+
+.. code-block:: shell
+
+    salt \* saltutil.sync_modules
+
+Once these modules are synced you are ready to schedule HubbleStack Nebula
+queries.
+
+Skip to [Usage].
+
+Installation (Manual)
+---------------------
+
+Place `hubble.py <_modules/hubble.py>`_ in your ``_modules/`` directory in your Salt
+fileserver (whether roots or gitfs) and sync it to the minion(s).
+
+.. code-block:: shell
+
+    git clone https://github.com/hubblestack/nebula.git hubblestack-nebula.git
+    cd hubblestack-nebula.git
+    mkdir -p /srv/salt/_modules/
+    cp _modules/nebula_osquery.py /srv/salt/_modules/
+
+    salt \* saltutil.sync_modules
+
+Usage
+=====
 
 This module also requires pillar data to function. The default pillar key for
-this data is ``nebula_osquery``, but you can pass in a different pillar key at
-call time. The queries themselves should be grouped under one or more group
-identifiers. Usually, these identifiers will be frequencies, such as
-``fifteen_min`` or ``hourly`` or ``daily``. The module targets the queries
-using these identifiers.
+this data is ``nebula_osquery``.  The queries themselves should be grouped
+under one or more group identifiers. Usually, these identifiers will be
+frequencies, such as ``fifteen_min`` or ``hourly`` or ``daily``. The module
+targets the queries using these identifiers.
 
 Your pillar data might look like this:
+
+**hubble_nebula.sls**
 
 .. code-block:: yaml
 
     nebula_osquery:
-      hour:
-        - crontab: query: select c.*,t.iso_8601 as _time from crontab as c join time as t;
+      fifteen_min:
+        - query_name: running_procs
+          query: select p.name as process, p.pid as process_id, p.cmdline, p.cwd, p.on_disk, p.resident_size as mem_used, p.parent, g.groupname, u.username as user, p.path, h.md5, h.sha1, h.sha256 from processes as p left join users as u on p.uid=u.uid left join groups as g on p.gid=g.gid left join hash as h on p.path=h.path;
+        - query_name: established_outbound
+          query: select t.iso_8601 as _time, pos.family, h.*, ltrim(pos.local_address, ':f') as src, pos.local_port as src_port, pos.remote_port as dest_port, ltrim(remote_address, ':f') as dest, name, p.path as file_path, cmdline, pos.protocol, lp.protocol from process_open_sockets as pos join processes as p on p.pid=pos.pid left join time as t LEFT JOIN listening_ports as lp on lp.port=pos.local_port AND lp.protocol=pos.protocol LEFT JOIN hash as h on h.path=p.path where not remote_address='' and not remote_address='::' and not remote_address='0.0.0.0' and not remote_address='127.0.0.1' and port is NULL;
+        - query_name: listening_procs
+          query:  select t.iso_8601 as _time, h.md5 as md5, p.pid, name, ltrim(address, ':f') as address, port, p.path as file_path, cmdline, root, parent from listening_ports as lp JOIN processes as p on lp.pid=p.pid left JOIN time as t JOIN hash as h on h.path=p.path WHERE not address='127.0.0.1';
         - query_name: suid_binaries
           query: select sb.*, t.iso_8601 as _time from suid_bin as sb join time as t;
+      hour:
+        - query_name: crontab
+          query: select c.*,t.iso_8601 as _time from crontab as c join time as t;
       day:
         - query_name: rpm_packages
           query: select rpm.*, t.iso_8601 from rpm_packages as rpm join time as t;
 
-You can then target these queries like so:
-
-.. code-block:: bash
-
-    salt '*' nebula.queries day
-    salt '*' nebula.queries hour verbose=True
-    salt '*' nebula.queries hour pillar_key=sec_osqueries
-
-You can set up the queries to run on a schedule using salt's scheduler, and
-return the results to Splunk or another destination. Or you can run the queries
-manually on demand.
-
-Schedule Data
--------------
+Schedule
+--------
 
 Nebula is designed to be used on a schedule. Here is a set of sample schedules
 for use with the sample pillar data contained in this repo:
+
+**hubble_nebula.sls (cont.)**
 
 .. code-block:: yaml
 
@@ -74,8 +130,34 @@ for use with the sample pillar data contained in this repo:
         args:
           - day
 
+Configuration
+=============
 
-Roadmap
--------
+The only configuration required to use Nebula is to incorporate the Queries and
+the Schedule into your minion config or pillar (pillar recommended). See the
+Usage section above for more information.
 
-  * WQL (Windows)
+Under the Hood
+==============
+
+Nebula leverages the ``osquery_nebula`` execution module, which needs to be
+synced to each minion. In addition, this also requires the ``osquery`` binary
+to be installed.
+
+More information about osquery can be found at https://osquery.io.
+
+.. note:: ``osqueryd`` does not need to be running, as we handle the scheduled queries via Salt's scheduler.
+
+Development
+===========
+
+Development for Nebula features is either incorporated into upstream osquery,
+or comes in the form of additional queries that leverage existing features. If
+you'd like to contribute queries or schedules, please see the section below.
+
+Contribute
+==========
+
+If you are interested in contributing or offering feedback to this project feel
+free to submit an issue or a pull request. We're very open to community
+contribution.
