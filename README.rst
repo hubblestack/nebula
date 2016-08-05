@@ -59,7 +59,7 @@ Skip to [Usage].
 Installation (Manual)
 ---------------------
 
-Place ``_modules/hubble.py`` into your ``salt/_modules/`` directory, and sync
+Place ``_modules/nebula_osquery.py`` into your ``salt/_modules/`` directory, and sync
 it to the minions.
 
 .. code-block:: shell
