@@ -51,6 +51,19 @@ You should now be able to sync the new modules to your minion(s) using the
 
     salt \* saltutil.sync_modules
 
+Copy the ``hubblestack_nebula.sls.orig`` into your Salt pillar, dropping the
+``.orig`` extension and target it to selected minions.
+
+.. code-block:: shell
+
+    base:
+      '*':
+        - hubblestack_quasar
+
+.. code-block:: shell
+
+    salt \* saltutil.refresh_pillar
+
 Once these modules are synced you are ready to schedule HubbleStack Nebula
 queries.
 
