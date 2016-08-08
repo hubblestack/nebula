@@ -58,7 +58,7 @@ Copy the ``hubblestack_nebula.sls.orig`` into your Salt pillar, dropping the
 
     base:
       '*':
-        - hubblestack_quasar
+        - hubblestack_nebula
 
 .. code-block:: shell
 
@@ -81,9 +81,24 @@ it to the minions.
     cd hubblestack-nebula.git
     mkdir -p /srv/salt/_modules/
     cp _modules/nebula_osquery.py /srv/salt/_modules/
+    cp pillar.example /srv/pillar/hubblestack_nebula.sls
 
     salt \* saltutil.sync_modules
 
+Target the ``hubblestack_nebula.sls`` to selected minions.
+
+.. code-block:: shell
+
+    base:
+      '*':
+        - hubblestack_nebula
+
+.. code-block:: shell
+
+    salt \* saltutil.refresh_pillar
+
+Once these modules are synced you are ready to schedule HubbleStack Nebula
+queries.
 Usage
 =====
 
