@@ -41,8 +41,8 @@ repo for updates and bugfixes!)
 
 .. code-block:: shell
 
-    wget https://spm.hubblestack.io/2016.7.0_RC1/hubblestack_nebula-2016.7.0_RC1-1.spm
-    spm local install hubblestack_nebula-2016.7.0_RC1-1.spm
+    wget https://spm.hubblestack.io/2016.7.0/hubblestack_nebula-2016.7.0-1.spm
+    spm local install hubblestack_nebula-2016.7.0-1.spm
 
 You should now be able to sync the new modules to your minion(s) using the
 ``sync_modules`` Salt utility:
