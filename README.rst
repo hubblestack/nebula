@@ -1,3 +1,5 @@
+.. _nebula_introduction:
+
 Introduction
 ============
 
@@ -12,10 +14,18 @@ track versioned, packaged updates to Hubble's components.
 The second method installs directly from git. It should be considered bleeding
 edge and possibly unstable.
 
-Currently only supported on Linux.
+.. note:: Currently only supported on Linux.
+
+.. _nebula_installation:
 
 Installation
 ============
+
+Each of the four HubbleStack components have been packaged for use with Salt's
+Package Manager (SPM). Note that all SPM installation commands should be done
+on the *Salt Master*.
+
+.. _nebula_installation_config:
 
 **Required Configuration**
 
@@ -31,6 +41,8 @@ Ensure that this path is defined in your Salt Master's ``file_roots``:
 .. note:: This should be the default value. To verify run: ``salt-call config.get file_roots``
 
 .. tip:: Remember to restart the Salt Master after making this change to the configuration.
+
+.. _nebula_installation_packages:
 
 Installation (Packages)
 -----------------------
@@ -67,7 +79,9 @@ Copy the ``hubblestack_nebula.sls.orig`` into your Salt pillar, dropping the
 Once these modules are synced you are ready to schedule HubbleStack Nebula
 queries.
 
-Skip to [Usage].
+Skip to :ref:`Usage <nebula_usage>`
+
+.. _nebula_installation_manual:
 
 Installation (Manual)
 ---------------------
@@ -99,6 +113,9 @@ Target the ``hubblestack_nebula.sls`` to selected minions.
 
 Once these modules are synced you are ready to schedule HubbleStack Nebula
 queries.
+
+.. _nebula_usage:
+
 Usage
 =====
 
@@ -130,6 +147,8 @@ Your pillar data might look like this:
       day:
         - query_name: rpm_packages
           query: select rpm.*, t.iso_8601 from rpm_packages as rpm join time as t;
+
+.. _nebula_usage_schedule:
 
 Schedule
 --------
@@ -164,12 +183,16 @@ for use with the sample pillar data contained in this repo:
         returner: splunk_nebula_return
         return_job: False
 
+.. _nebula_configuration:
+
 Configuration
 =============
 
 The only configuration required to use Nebula is to incorporate the Queries and
 the Schedule into your minion config or pillar (pillar recommended). See the
 Usage section above for more information.
+
+.. _nebula_under_the_hood:
 
 Under the Hood
 ==============
@@ -182,12 +205,16 @@ More information about osquery can be found at https://osquery.io.
 
 .. note:: ``osqueryd`` does not need to be running, as we handle the scheduled queries via Salt's scheduler.
 
+.. _nebula_development:
+
 Development
 ===========
 
 Development for Nebula features is either incorporated into upstream osquery,
 or comes in the form of additional queries that leverage existing features. If
 you'd like to contribute queries or schedules, please see the section below.
+
+.. _nebula_contribute:
 
 Contribute
 ==========
