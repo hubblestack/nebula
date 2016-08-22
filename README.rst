@@ -14,9 +14,9 @@ track versioned, packaged updates to Hubble's components.
 The second method installs directly from git. It should be considered bleeding
 edge and possibly unstable.
 
-.. note:: Currently only supported on Linux.
+.. note:: Currently only supported on Linux, on SaltStack 2015.8 and above. You can actually sync the osquery execution module from a newer version of salt to 2015.5 minions and it seems to work without issue. Officially, just upgrade to 2015.8.
 
-.. _nebula_installation:
+.. seealso:: Nebula has a hard dependency on the ``osqueryi`` binary. See install requirements here https://osquery.io/downloads/
 
 Installation
 ============
