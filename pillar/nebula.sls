@@ -13,4 +13,4 @@ nebula_osquery:
       query: select c.*,t.iso_8601 as _time from crontab as c join time as t;
   day:
     - query_name: rpm_packages
-      query: select rpm.name, rpm.version, rpm.release, rpm.source as pacakge_source, rpm.size, rpm.sha1, rpm.arch, t.iso_8601 from rpm_packages as rpm join time as t;
+      query: select rpm.name, rpm.version, rpm.release, rpm.source as package_source, rpm.size, rpm.sha1, rpm.arch, t.iso_8601 from rpm_packages as rpm join time as t;
