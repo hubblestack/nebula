@@ -29,9 +29,12 @@ nebula_osquery:
 from __future__ import absolute_import
 
 import copy
-import salt.utils
-
 import logging
+import yaml
+
+import salt.utils
+from salt.exceptions import CommandExecutionError
+
 log = logging.getLogger(__name__)
 
 __virtualname__ = 'nebula'
@@ -45,7 +48,9 @@ def __virtual__():
     return __virtualname__
 
 
-def queries(query_group, verbose=False, pillar_key='nebula_osquery'):
+def queries(query_group,
+            query_file='salt://hubblestack_nebula_queries.yaml',
+            verbose=False):
     '''
     Run the set of queries represented by ``query_group`` from the
     configuration in the pillar key ``nebular_osquery``.
@@ -53,13 +58,12 @@ def queries(query_group, verbose=False, pillar_key='nebula_osquery'):
     query_group
         Group of queries to run
 
+    query_file
+        salt:// file which will be parsed for osquery queries
+
     verbose
         Defaults to False. If set to True, more information (such as the query
         which was run) will be included in the result.
-
-    pillar_key
-        Defaults to 'nebula_osquery'. This is the key in pillar which will be
-        inspected for Nebula osquery data.
 
     CLI Examples:
 
@@ -69,7 +73,15 @@ def queries(query_group, verbose=False, pillar_key='nebula_osquery'):
         salt '*' nebula.queries hour verbose=True
         salt '*' nebula.queries hour pillar_key=sec_osqueries
     '''
-    query_data = __salt__['pillar.get']('{0}:{1}'.format(pillar_key, query_group), [])
+    query_file = __salt__['cp.cache_file'](query_file)
+    with open(query_file, 'r') as fh:
+        query_data = yaml.safe_load(fh)
+
+    if not isinstance(query_data, dict):
+        raise CommandExecutionError('Query data is not formed as a dict {0}'
+                                    .format(query_data))
+
+    query_data = query_data.get(query_group, [])
 
     if not query_data:
         return None
