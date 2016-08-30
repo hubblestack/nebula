@@ -168,6 +168,7 @@ for use with the sample pillar data contained in this repo:
           - fifteen_min
         returner: splunk_nebula_return
         return_job: False
+        run_on_start: False
       nebula_hour:
         function: nebula.queries
         seconds: 3600
@@ -175,6 +176,7 @@ for use with the sample pillar data contained in this repo:
           - hour
         returner: splunk_nebula_return
         return_job: False
+        run_on_start: False
       nebula_day:
         function: nebula.queries
         seconds: 86400
@@ -182,6 +184,7 @@ for use with the sample pillar data contained in this repo:
           - day
         returner: splunk_nebula_return
         return_job: False
+        run_on_start: False
 
 .. _nebula_configuration:
 
