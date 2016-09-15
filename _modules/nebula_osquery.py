@@ -49,11 +49,11 @@ def __virtual__():
 
 
 def queries(query_group,
-            query_file='salt://hubblestack_nebula_queries.yaml',
+            query_file='salt://hubblestack_nebula/hubblestack_nebula_queries.yaml',
             verbose=False):
     '''
     Run the set of queries represented by ``query_group`` from the
-    configuration in the pillar key ``nebular_osquery``.
+    configuration in the file query_file
 
     query_group
         Group of queries to run

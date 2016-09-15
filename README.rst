@@ -95,7 +95,8 @@ it to the minions.
     cd hubblestack-nebula.git
     mkdir -p /srv/salt/_modules/
     cp _modules/nebula_osquery.py /srv/salt/_modules/
-    cp pillar.example /srv/pillar/hubblestack_nebula.sls
+    mkdir /srv/salt/hubblestack_nebula
+    cp hubblestack_nebula/hubblestack_nebula_queries.yaml /srv/salt/hubblestack_nebula
 
     salt \* saltutil.sync_modules
 
