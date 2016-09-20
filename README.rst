@@ -53,8 +53,8 @@ repo for updates and bugfixes!)
 
 .. code-block:: shell
 
-    wget https://spm.hubblestack.io/2016.7.1/hubblestack_nebula-2016.7.1-1.spm
-    spm local install hubblestack_nebula-2016.7.1-1.spm
+    wget https://spm.hubblestack.io/nebula/hubblestack_nebula-2016.9.1-1.spm
+    spm local install hubblestack_nebula-2016.9.1-1.spm
 
 You should now be able to sync the new modules to your minion(s) using the
 ``sync_modules`` Salt utility:
@@ -62,19 +62,6 @@ You should now be able to sync the new modules to your minion(s) using the
 .. code-block:: shell
 
     salt \* saltutil.sync_modules
-
-Copy the ``hubblestack_nebula.sls.orig`` into your Salt pillar, dropping the
-``.orig`` extension and target it to selected minions.
-
-.. code-block:: shell
-
-    base:
-      '*':
-        - hubblestack_nebula
-
-.. code-block:: shell
-
-    salt \* saltutil.refresh_pillar
 
 Once these modules are synced you are ready to schedule HubbleStack Nebula
 queries.
@@ -100,18 +87,6 @@ it to the minions.
 
     salt \* saltutil.sync_modules
 
-Target the ``hubblestack_nebula.sls`` to selected minions.
-
-.. code-block:: shell
-
-    base:
-      '*':
-        - hubblestack_nebula
-
-.. code-block:: shell
-
-    salt \* saltutil.refresh_pillar
-
 Once these modules are synced you are ready to schedule HubbleStack Nebula
 queries.
 
@@ -128,26 +103,25 @@ targets the queries using these identifiers.
 
 Your pillar data might look like this:
 
-**hubble_nebula.sls**
+**hubblestack_nebula_queries.yaml**
 
 .. code-block:: yaml
 
-    nebula_osquery:
-      fifteen_min:
-        - query_name: running_procs
-          query: select p.name as process, p.pid as process_id, p.cmdline, p.cwd, p.on_disk, p.resident_size as mem_used, p.parent, g.groupname, u.username as user, p.path, h.md5, h.sha1, h.sha256 from processes as p left join users as u on p.uid=u.uid left join groups as g on p.gid=g.gid left join hash as h on p.path=h.path;
-        - query_name: established_outbound
-          query: select t.iso_8601 as _time, pos.family, h.*, ltrim(pos.local_address, ':f') as src, pos.local_port as src_port, pos.remote_port as dest_port, ltrim(remote_address, ':f') as dest, name, p.path as file_path, cmdline, pos.protocol, lp.protocol from process_open_sockets as pos join processes as p on p.pid=pos.pid left join time as t LEFT JOIN listening_ports as lp on lp.port=pos.local_port AND lp.protocol=pos.protocol LEFT JOIN hash as h on h.path=p.path where not remote_address='' and not remote_address='::' and not remote_address='0.0.0.0' and not remote_address='127.0.0.1' and port is NULL;
-        - query_name: listening_procs
-          query:  select t.iso_8601 as _time, h.md5 as md5, p.pid, name, ltrim(address, ':f') as address, port, p.path as file_path, cmdline, root, parent from listening_ports as lp JOIN processes as p on lp.pid=p.pid left JOIN time as t JOIN hash as h on h.path=p.path WHERE not address='127.0.0.1';
-        - query_name: suid_binaries
-          query: select sb.*, t.iso_8601 as _time from suid_bin as sb join time as t;
-      hour:
-        - query_name: crontab
-          query: select c.*,t.iso_8601 as _time from crontab as c join time as t;
-      day:
-        - query_name: rpm_packages
-          query: select rpm.*, t.iso_8601 from rpm_packages as rpm join time as t;
+    fifteen_min:
+      - query_name: running_procs
+        query: SELECT p.name AS process, p.pid AS process_id, p.cmdline, p.cwd, p.on_disk, p.resident_size AS mem_used, p.parent, g.groupname, u.username AS user, p.path, h.md5, h.sha1, h.sha256 FROM processes AS p LEFT JOIN users AS u ON p.uid=u.uid LEFT JOIN groups AS g ON p.gid=g.gid LEFT JOIN hash AS h ON p.path=h.path;
+      - query_name: established_outbound
+        query: SELECT t.iso_8601 AS _time, pos.family, h.*, ltrim(pos.local_address, ':f') AS src, pos.local_port AS src_port, pos.remote_port AS dest_port, ltrim(remote_address, ':f') AS dest, name, p.path AS file_path, cmdline, pos.protocol, lp.protocol FROM process_open_sockets AS pos JOIN processes AS p ON p.pid=pos.pid LEFT JOIN time AS t LEFT JOIN (SELECT * FROM listening_ports) AS lp ON lp.port=pos.local_port AND lp.protocol=pos.protocol LEFT JOIN hash AS h ON h.path=p.path WHERE NOT remote_address='' AND NOT remote_address='::' AND NOT remote_address='0.0.0.0' AND NOT remote_address='127.0.0.1' AND port is NULL;
+      - query_name: listening_procs
+        query:  SELECT t.iso_8601 AS _time, h.md5 AS md5, p.pid, name, ltrim(address, ':f') AS address, port, p.path AS file_path, cmdline, root, parent FROM listening_ports AS lp LEFT JOIN processes AS p ON lp.pid=p.pid LEFT JOIN time AS t LEFT JOIN hash AS h ON h.path=p.path WHERE NOT address='127.0.0.1';
+      - query_name: suid_binaries
+        query: SELECT sb.*, t.iso_8601 AS _time FROM suid_bin AS sb JOIN time AS t;
+    hour:
+      - query_name: crontab
+        query: SELECT c.*,t.iso_8601 AS _time FROM crontab AS c JOIN time AS t;
+    day:
+      - query_name: rpm_packages
+        query: SELECT rpm.name, rpm.version, rpm.release, rpm.source AS package_source, rpm.size, rpm.sha1, rpm.arch, t.iso_8601 FROM rpm_packages AS rpm JOIN time AS t;
 
 .. _nebula_usage_schedule:
 
