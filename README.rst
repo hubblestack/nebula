@@ -95,15 +95,9 @@ queries.
 Usage
 =====
 
-This module also requires pillar data to function. The default pillar key for
-this data is ``nebula_osquery``.  The queries themselves should be grouped
-under one or more group identifiers. Usually, these identifiers will be
-frequencies, such as ``fifteen_min`` or ``hourly`` or ``daily``. The module
-targets the queries using these identifiers.
+These queries have been designed to give detailed insight into system activity.
 
-Your pillar data might look like this:
-
-**hubblestack_nebula_queries.yaml**
+**hubblestack_nebula/hubblestack_nebula_queries.yaml**
 
 .. code-block:: yaml
 
@@ -129,7 +123,7 @@ Schedule
 --------
 
 Nebula is designed to be used on a schedule. Here is a set of sample schedules
-for use with the sample pillar data contained in this repo:
+for use with the sample queries.
 
 **hubble_nebula.sls (cont.)**
 
