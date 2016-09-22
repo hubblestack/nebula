@@ -77,7 +77,7 @@ def queries(query_group,
             #   more data
             return [
                     {'fallback_osfinger': {
-                        'data': [__grains__.get('osfinger', __grains__.get('osfullname'))],
+                        'data': [{'osfinger': __grains__.get('osfinger', __grains__.get('osfullname'))}],
                         'result': True
                     }},
             ]
