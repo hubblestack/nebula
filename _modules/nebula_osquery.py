@@ -75,12 +75,21 @@ def queries(query_group,
             # Match the formatting of normal osquery results. Not super
             #   readable, but just add new dictionaries to the list as we need
             #   more data
-            return [
+            ret = []
+            ret.append(
                     {'fallback_osfinger': {
-                        'data': [{'osfinger': __grains__.get('osfinger', __grains__.get('osfullname'))}],
-                        'result': True
-                    }},
-            ]
+                         'data': [{'osfinger': __grains__.get('osfinger', __grains__.get('osfullname'))}],
+                         'result': True
+                    }}
+            )
+            if 'pkg.list_pkgs' in __salt__:
+                ret.append(
+                        {'fallback_pkgs': {
+                             'data': [{'pkgs': __salt__['pkg.list_pkgs']()}],
+                             'result': True
+                        }}
+                )
+            return ret
         else:
             log.warning('osquery not installed on this host. Skipping.')
             return None
