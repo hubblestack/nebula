@@ -72,8 +72,15 @@ def queries(query_group,
     if salt.utils.is_windows() or 'osquery.query' not in __salt__:
         if query_group == 'day':
             log.warning('osquery not installed on this host. Returning baseline data')
-            return {'id': __grains__.get('id'),
-                    'osfinger': __grains__.get('osfinger', __grains.get('osfullname'))}
+            # Match the formatting of normal osquery results. Not super
+            #   readable, but just add new dictionaries to the list as we need
+            #   more data
+            return [
+                    {'fallback_osfinger': {
+                        'data': [__grains__.get('osfinger', __grains__.get('osfullname'))],
+                        'result': True
+                    }},
+            ]
         else:
             log.warning('osquery not installed on this host. Skipping.')
             return None
