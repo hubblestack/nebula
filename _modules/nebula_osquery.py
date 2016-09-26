@@ -41,10 +41,6 @@ __virtualname__ = 'nebula'
 
 
 def __virtual__():
-    if salt.utils.is_windows():
-        return False, 'Windows not supported'
-    if 'osquery.query' not in __salt__:
-        return False, 'osquery not available'
     return __virtualname__
 
 
@@ -73,6 +69,31 @@ def queries(query_group,
         salt '*' nebula.queries hour verbose=True
         salt '*' nebula.queries hour pillar_key=sec_osqueries
     '''
+    if salt.utils.is_windows() or 'osquery.query' not in __salt__:
+        if query_group == 'day':
+            log.warning('osquery not installed on this host. Returning baseline data')
+            # Match the formatting of normal osquery results. Not super
+            #   readable, but just add new dictionaries to the list as we need
+            #   more data
+            ret = []
+            ret.append(
+                    {'fallback_osfinger': {
+                         'data': [{'osfinger': __grains__.get('osfinger', __grains__.get('osfullname'))}],
+                         'result': True
+                    }}
+            )
+            if 'pkg.list_pkgs' in __salt__:
+                ret.append(
+                        {'fallback_pkgs': {
+                             'data': [{'pkgs': __salt__['pkg.list_pkgs']()}],
+                             'result': True
+                        }}
+                )
+            return ret
+        else:
+            log.warning('osquery not installed on this host. Skipping.')
+            return None
+
     query_file = __salt__['cp.cache_file'](query_file)
     with open(query_file, 'r') as fh:
         query_data = yaml.safe_load(fh)
