@@ -15,3 +15,5 @@ day:
     query: SELECT rpm.name, rpm.version, rpm.release, rpm.source AS package_source, rpm.size, rpm.sha1, rpm.arch, t.iso_8601 FROM rpm_packages AS rpm JOIN time AS t;
   - query_name: os_info
     query: select * from os_version;
+  - query_name: interface_addresses
+    query: SELECT interface, address FROM interface_addresses WHERE NOT interface='lo';
