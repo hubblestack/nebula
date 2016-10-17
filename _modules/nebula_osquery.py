@@ -85,7 +85,7 @@ def queries(query_group,
             if 'pkg.list_pkgs' in __salt__:
                 ret.append(
                         {'fallback_pkgs': {
-                             'data': [{'pkgs': __salt__['pkg.list_pkgs']()}],
+                             'data': [{'name': k, 'version': v} for k, v in __salt__['pkg.list_pkgs']().iteritems()],
                              'result': True
                         }}
                 )
