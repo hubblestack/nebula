@@ -97,7 +97,7 @@ def queries(query_group,
                 ret.append(hubble_versions())
             return ret
         else:
-            log.warning('osquery not installed on this host. Skipping.')
+            log.debug('osquery not installed on this host. Skipping.')
             return None
 
     query_file = __salt__['cp.cache_file'](query_file)
