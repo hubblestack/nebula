@@ -122,38 +122,19 @@ These queries have been designed to give detailed insight into system activity.
 Schedule
 --------
 
-Nebula is designed to be used on a schedule. Here is a set of sample schedules
-for use with the sample queries.
+Nebula is meant to be run on a schedule. Unfortunately, in it's present state,
+the Salt scheduler has a memory leak. Pending a solution we're suggesting the
+use of cron for the scheduled jobs:
 
-**hubble_nebula.sls (cont.)**
+**/etc/cron.d/hubble**
 
 .. code-block:: yaml
 
-    schedule:
-      nebula_fifteen_min:
-        function: nebula.queries
-        seconds: 900
-        args:
-          - fifteen_min
-        returner: splunk_nebula_return
-        return_job: False
-        run_on_start: False
-      nebula_hour:
-        function: nebula.queries
-        seconds: 3600
-        args:
-          - hour
-        returner: splunk_nebula_return
-        return_job: False
-        run_on_start: False
-      nebula_day:
-        function: nebula.queries
-        seconds: 86400
-        args:
-          - day
-        returner: splunk_nebula_return
-        return_job: False
-        run_on_start: False
+    MAILTO=""
+    SHELL=/bin/bash
+    */15 * * * * root /usr/bin/salt '*' nebula.queries fifteen_min --return splunk_nebula_return
+    @hourly      root /usr/bin/salt '*' nebula.queries hour --return splunk_nebula_return
+    @daily       root /usr/bin/salt '*' nebula.queries day --return splunk_nebula_return
 
 .. _nebula_configuration:
 
