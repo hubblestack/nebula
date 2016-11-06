@@ -53,8 +53,8 @@ repo for updates and bugfixes!)
 
 .. code-block:: shell
 
-    wget https://spm.hubblestack.io/nebula/hubblestack_nebula-2016.9.1-1.spm
-    spm local install hubblestack_nebula-2016.9.1-1.spm
+    wget https://spm.hubblestack.io/nebula/hubblestack_nebula-2016.10.2-1.spm
+    spm local install hubblestack_nebula-2016.10.2-1.spm
 
 You should now be able to sync the new modules to your minion(s) using the
 ``sync_modules`` Salt utility:
@@ -89,6 +89,27 @@ it to the minions.
 
 Once these modules are synced you are ready to schedule HubbleStack Nebula
 queries.
+
+.. _nebula_installation_gitfs:
+
+Installation (GitFS)
+--------------------
+
+This installation method subscribes directly to our GitHub repository, pinning
+to a tag or branch. This method requires no package installation or manual
+checkouts.
+
+Requirements: GitFS support on your Salt Master.
+
+**/etc/salt/master.d/hubblestack-nebula.conf**
+
+.. code-block:: diff
+
+    gitfs_remotes:
+      - https://github.com/hubblestack/nebula:
+        - base: v2016.10.2
+
+.. tip:: Remember to restart the Salt Master after applying this change.
 
 .. _nebula_usage:
 

@@ -3,7 +3,7 @@
 osquery wrapper for HubbleStack Nebula
 
 :maintainer: basepi
-:maturity: 20160517
+:maturity: 2016.10.2
 :platform: All
 :requires: SaltStack, osquery
 
@@ -39,7 +39,7 @@ from salt.exceptions import CommandExecutionError
 
 log = logging.getLogger(__name__)
 
-__version__ = 'v2016.10.1'
+__version__ = 'v2016.10.2'
 __virtualname__ = 'nebula'
 
 
