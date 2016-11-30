@@ -48,7 +48,7 @@ def __virtual__():
 
 
 def queries(query_group,
-            query_file='salt://hubblestack_nebula/hubblestack_nebula_queries.yaml',
+            query_file=None,
             verbose=False,
             report_version_with_day=True):
     '''
@@ -73,7 +73,12 @@ def queries(query_group,
         salt '*' nebula.queries hour verbose=True
         salt '*' nebula.queries hour pillar_key=sec_osqueries
     '''
-    if salt.utils.is_windows() or 'osquery.query' not in __salt__:
+    if query_file is None:
+        if salt.utils.is_windows():
+            query_file = 'salt://hubblestack_nebula/hubblestack_nebula_win_queries.yaml'
+        else:
+            query_file = 'salt://hubblestack_nebula/hubblestack_nebula_queries.yaml'
+    if 'osquery.query' not in __salt__:
         if query_group == 'day':
             log.warning('osquery not installed on this host. Returning baseline data')
             # Match the formatting of normal osquery results. Not super
@@ -98,6 +103,19 @@ def queries(query_group,
             return ret
         else:
             log.debug('osquery not installed on this host. Skipping.')
+            return None
+
+    if salt.utils.is_windows():
+        win_version = __grains__['osfullname']
+        if '2012','2016' in win_version:
+            osquery_in_path = __salt__['cmd.run']('osqueryi --help')
+            if 'osquery command line flags:' in osquery_in_path:
+                win_osquery = True
+            else:
+                log.debug('osqueryi.exe not installed in system path')
+                return None
+        else: 
+            log.debug('osquery does not run on windows versions earlier than Server 2012 and Windows 8')
             return None
 
     query_file = __salt__['cp.cache_file'](query_file)
