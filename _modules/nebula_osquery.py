@@ -78,7 +78,7 @@ def queries(query_group,
             query_file = 'salt://hubblestack_nebula/hubblestack_nebula_win_queries.yaml'
         else:
             query_file = 'salt://hubblestack_nebula/hubblestack_nebula_queries.yaml'
-    if 'osquery.query' not in __salt__:
+    if not salt.utils.which('osqueryi'):
         if query_group == 'day':
             log.warning('osquery not installed on this host. Returning baseline data')
             # Match the formatting of normal osquery results. Not super
@@ -107,12 +107,7 @@ def queries(query_group,
 
     if salt.utils.is_windows():
         win_version = __grains__['osfullname']
-        if '2012' in win_version or '2016' in win_version:
-            osquery_in_path = __salt__['cmd.run']('osqueryi --help')
-            if 'osquery command line flags:' not in osquery_in_path:
-                log.debug('osqueryi.exe not installed in system path')
-                return None
-        else: 
+        if '2012' not in win_version and '2016' not in win_version:
             log.debug('osquery does not run on windows versions earlier than Server 2012 and Windows 8')
             return None
 
@@ -139,7 +134,20 @@ def queries(query_group,
         query_sql = query.get('query')
         if not query_sql:
             continue
-        query_ret = __salt__['osquery.query'](query_sql)
+
+        # Run the osqueryi query
+        query_ret = {
+            'result': True,
+        }
+
+        cmd = ['osqueryi', '--json', sql]
+        res = __salt__['cmd.run_all'](cmd)
+        if res['retcode'] == 0:
+            query_ret['data'] = json.loads(res['stdout'])
+        else:
+            queury_ret['result'] = False
+            queury_ret['error'] = res['stderr']
+
         if verbose:
             tmp = copy.deepcopy(query)
             tmp['query_result'] = query_ret
