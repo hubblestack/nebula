@@ -109,8 +109,25 @@ def queries(query_group,
     if salt.utils.is_windows():
         win_version = __grains__['osfullname']
         if '2012' not in win_version and '2016' not in win_version:
-            log.debug('osquery does not run on windows versions earlier than Server 2012 and Windows 8')
-            return None
+            log.error('osquery does not run on windows versions earlier than Server 2012 and Windows 8')
+            if query_group == 'day':
+                ret = []
+                ret.append(
+                        {'fallback_osfinger': {
+                             'data': [{'osfinger': __grains__.get('osfinger', __grains__.get('osfullname'))}],
+                             'result': True
+                        }}
+                )
+                ret.append(
+                        {'fallback_error': {
+                             'data': 'osqueryi is installed but not compatible with this version of windows',
+                             'result': True
+                        }}
+                )
+                return ret
+            else:
+               return None
+                   
 
     orig_filename = query_file
     query_file = __salt__['cp.cache_file'](query_file)
