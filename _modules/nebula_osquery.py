@@ -107,18 +107,20 @@ def queries(query_group,
 
     if salt.utils.is_windows():
         win_version = __grains__['osfullname']
-        if '2012','2016' in win_version:
+        if '2012' in win_version or '2016' in win_version:
             osquery_in_path = __salt__['cmd.run']('osqueryi --help')
-            if 'osquery command line flags:' in osquery_in_path:
-                win_osquery = True
-            else:
+            if 'osquery command line flags:' not in osquery_in_path:
                 log.debug('osqueryi.exe not installed in system path')
                 return None
         else: 
             log.debug('osquery does not run on windows versions earlier than Server 2012 and Windows 8')
             return None
 
+    orig_filename = query_file
     query_file = __salt__['cp.cache_file'](query_file)
+    if query_file is None:
+        log.error('Could not find file {0}.'.format(orig_filename))
+        return None
     with open(query_file, 'r') as fh:
         query_data = yaml.safe_load(fh)
 
