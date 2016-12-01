@@ -140,7 +140,7 @@ def queries(query_group,
             'result': True,
         }
 
-        cmd = ['osqueryi', '--json', sql]
+        cmd = ['osqueryi', '--json', query_sql]
         res = __salt__['cmd.run_all'](cmd)
         if res['retcode'] == 0:
             query_ret['data'] = json.loads(res['stdout'])
