@@ -29,6 +29,7 @@ nebula_osquery:
 from __future__ import absolute_import
 
 import copy
+import json
 import logging
 import os
 import sys
@@ -48,7 +49,7 @@ def __virtual__():
 
 
 def queries(query_group,
-            query_file='salt://hubblestack_nebula/hubblestack_nebula_queries.yaml',
+            query_file=None,
             verbose=False,
             report_version_with_day=True):
     '''
@@ -73,7 +74,12 @@ def queries(query_group,
         salt '*' nebula.queries hour verbose=True
         salt '*' nebula.queries hour pillar_key=sec_osqueries
     '''
-    if salt.utils.is_windows() or 'osquery.query' not in __salt__:
+    if query_file is None:
+        if salt.utils.is_windows():
+            query_file = 'salt://hubblestack_nebula/hubblestack_nebula_win_queries.yaml'
+        else:
+            query_file = 'salt://hubblestack_nebula/hubblestack_nebula_queries.yaml'
+    if not salt.utils.which('osqueryi'):
         if query_group == 'day':
             log.warning('osquery not installed on this host. Returning baseline data')
             # Match the formatting of normal osquery results. Not super
@@ -100,7 +106,34 @@ def queries(query_group,
             log.debug('osquery not installed on this host. Skipping.')
             return None
 
+    if salt.utils.is_windows():
+        win_version = __grains__['osfullname']
+        if '2012' not in win_version and '2016' not in win_version:
+            log.error('osquery does not run on windows versions earlier than Server 2012 and Windows 8')
+            if query_group == 'day':
+                ret = []
+                ret.append(
+                        {'fallback_osfinger': {
+                             'data': [{'osfinger': __grains__.get('osfinger', __grains__.get('osfullname'))}],
+                             'result': True
+                        }}
+                )
+                ret.append(
+                        {'fallback_error': {
+                             'data': 'osqueryi is installed but not compatible with this version of windows',
+                             'result': True
+                        }}
+                )
+                return ret
+            else:
+               return None
+                   
+
+    orig_filename = query_file
     query_file = __salt__['cp.cache_file'](query_file)
+    if query_file is None:
+        log.error('Could not find file {0}.'.format(orig_filename))
+        return None
     with open(query_file, 'r') as fh:
         query_data = yaml.safe_load(fh)
 
@@ -119,7 +152,20 @@ def queries(query_group,
         query_sql = query.get('query')
         if not query_sql:
             continue
-        query_ret = __salt__['osquery.query'](query_sql)
+
+        # Run the osqueryi query
+        query_ret = {
+            'result': True,
+        }
+
+        cmd = ['osqueryi', '--json', query_sql]
+        res = __salt__['cmd.run_all'](cmd)
+        if res['retcode'] == 0:
+            query_ret['data'] = json.loads(res['stdout'])
+        else:
+            queury_ret['result'] = False
+            queury_ret['error'] = res['stderr']
+
         if verbose:
             tmp = copy.deepcopy(query)
             tmp['query_result'] = query_ret
