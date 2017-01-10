@@ -17,3 +17,5 @@ day:
     query: select * from os_version;
   - query_name: interface_addresses
     query: SELECT interface, address FROM interface_addresses WHERE NOT interface='lo';
+  - query_name: uptime
+    query: SELECT total_seconds AS uptime FROM uptime;
