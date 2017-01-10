@@ -99,6 +99,12 @@ def queries(query_group,
                              'result': True
                         }}
                 )
+            ret.append(
+                    {'fallback_uptime': {
+                         'data': [{'uptime': __salt__['status.uptime']().get('seconds', __salt__['cmd.run']('uptime'))}],
+                         'result': True
+                    }}
+            )
             if report_version_with_day:
                 ret.append(hubble_versions())
             return ret
