@@ -99,9 +99,12 @@ def queries(query_group,
                              'result': True
                         }}
                 )
+            uptime = __salt__['status.uptime']()
+            if isinstance(uptime, dict):
+                uptime = uptime.get('seconds', __salt__['cmd.run']('uptime'))
             ret.append(
                     {'fallback_uptime': {
-                         'data': [{'uptime': __salt__['status.uptime']().get('seconds', __salt__['cmd.run']('uptime'))}],
+                         'data': [{'uptime': uptime}],
                          'result': True
                     }}
             )
